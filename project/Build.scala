@@ -35,7 +35,8 @@ object Build extends sbt.Build {
 
   val copySharedSourceFiles = TaskKey[Unit]("copied shared services source code")
 
-  val akkaVersion = "2.4.3"
+  val akkaVersion = "2.4-SNAPSHOT"
+  val akkaStreamVersion = "2.4-SNAPSHOT"
   val kryoVersion = "0.3.2"
   val clouderaVersion = "2.6.0-cdh5.4.2"
   val clouderaHBaseVersion = "1.0.0-cdh5.4.2"
@@ -150,8 +151,8 @@ object Build extends sbt.Build {
     libraryDependencies ++= Seq(
       "com.typesafe.akka" %% "akka-cluster" % akkaVersion,
       "com.typesafe.akka" %% "akka-cluster-tools" % akkaVersion,
-      "com.typesafe.akka" %% "akka-http-experimental" % akkaVersion,
-      "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaVersion,
+      "com.typesafe.akka" %% "akka-http-experimental" % akkaStreamVersion,
+      "com.typesafe.akka" %% "akka-http-spray-json-experimental" % akkaStreamVersion,
       "commons-logging" % "commons-logging" % commonsLoggingVersion,
       "com.typesafe.akka" %% "akka-distributed-data-experimental" % akkaVersion,
       "org.apache.hadoop" % "hadoop-common" % clouderaVersion % "provided"
@@ -253,7 +254,7 @@ object Build extends sbt.Build {
     base = file("."),
     settings = commonSettings ++ noPublish ++ gearpumpUnidocSetting)
     .aggregate(core, daemon, streaming, services, external_kafka, external_monoid,
-      external_serializer, examples, storm, yarn, external_hbase, packProject,
+      external_serializer, examples, storm, akkastream, yarn, external_hbase, packProject,
       external_hadoopfs, integration_test).settings(Defaults.itSettings: _*)
 
   lazy val core = Project(
@@ -309,11 +310,11 @@ object Build extends sbt.Build {
     settings(serviceJvmSettings: _*)
     .settings(compile in Compile <<= (compile in Compile))
     .dependsOn(streaming % "test->test;compile->compile",
-      daemon % "test->test;compile->compile;provided")
+      daemon % "test->test;compile->compile")
 
   lazy val serviceJvmSettings = commonSettings ++ noPublish ++ Seq(
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaVersion % "test",
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaStreamVersion % "test",
       "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
       "com.lihaoyi" %% "upickle" % upickleVersion,
       "com.softwaremill.akka-http-session" %% "core" % "0.2.5",
@@ -381,14 +382,14 @@ object Build extends sbt.Build {
   lazy val akkastream = Project(
     id = "gearpump-experiments-akkastream",
     base = file("experiments/akkastream"),
-    settings = commonSettings ++ noPublish ++ myAssemblySettings ++
+    settings = commonSettings ++ noPublish ++ 
       Seq(
         libraryDependencies ++= Seq(
-          "org.json4s" %% "json4s-jackson" % "3.2.11"
-        ),
-        mainClass in(Compile, packageBin) := Some("akka.stream.gearpump.example.Test")
+          "org.json4s" %% "json4s-jackson" % "3.2.11",
+          "com.typesafe.akka" %% "akka-stream" % akkaStreamVersion
+        )
       )
-  ) dependsOn(streaming % "test->test; provided", daemon % "test->test; provided")
+  ) dependsOn(streaming % "test->test; compile->compile", daemon % "test->test;compile->compile")
 
   lazy val storm = Project(
     id = "gearpump-experiments-storm",
