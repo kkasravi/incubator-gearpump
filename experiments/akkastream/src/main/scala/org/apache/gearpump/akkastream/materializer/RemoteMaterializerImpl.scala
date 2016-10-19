@@ -322,11 +322,9 @@ class RemoteMaterializerImpl(graph: Graph[Module, Edge], system: ActorSystem) {
         // TODO
         null
       case unzip: Unzip[_, _] =>
-//        ProcessorOp(classOf[Unzip2Task[_, _, _]], parallelism,
-//          conf.withValue(
-//            Unzip2Task.UNZIP2_FUNCTION, Unzip2Task.UnZipFunction(unzip.unzipper)), "unzip")
-        // TODO
-        null
+        ProcessorOp(classOf[Unzip2Task[_, _, _]], parallelism,
+          conf.withValue(
+            Unzip2Task.UNZIP2_FUNCTION, Unzip2Task.UnZipFunction(unzip.unzipper)), "unzip")
       case zip: Zip[_, _] =>
         zipWithOp(zip.zipper, conf)
       case zipWith2: ZipWith2[_, _, _] =>

@@ -94,9 +94,8 @@ object GearpumpMaterializer {
       case null => throw new IllegalArgumentException("ActorRefFactory context must be defined")
       case _ =>
         throw new IllegalArgumentException(
-          s"""
-             |  context must be a ActorSystem or ActorContext, got [${context.getClass.getName}]
-          """.stripMargin
+          "\n  context must be a ActorSystem or ActorContext, got [%s]\n          ".
+            format(context.getClass.getName).stripMargin
         )
     }
     system
@@ -175,10 +174,11 @@ class GearpumpMaterializer(override val system: ActorSystem,
       ActorAttributes.SupervisionStrategy(settings.supervisionDecider) ::
       Nil)
 
+    // val info = Fusing.structuralInfo(runnableGraph, Attributes.none)
     val info = Fusing.aggressive(runnableGraph).module.info
     val graph = GGraph.empty[Module, Edge]
 
-    info.allModules.foreach(module => {
+    info.subModules.foreach(module => {
       if (module.isCopied) {
         val original = module.asInstanceOf[CopiedModule].copyOf
         graph.addVertex(original)
