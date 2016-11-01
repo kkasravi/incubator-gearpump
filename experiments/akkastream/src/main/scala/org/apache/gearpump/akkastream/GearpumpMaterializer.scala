@@ -135,6 +135,9 @@ class GearpumpMaterializer(override val system: ActorSystem,
 
   override def logger: LoggingAdapter = Logging.getLogger(system, this)
 
+  override def makeLogger(logSource: Class[_]): LoggingAdapter =
+    Logging(system, logSource)
+
   override def isShutdown: Boolean = system.whenTerminated.isCompleted
 
   override def effectiveSettings(opAttr: Attributes): ActorMaterializerSettings = {
